@@ -1,0 +1,36 @@
+#pragma once
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <string>
+#include <unordered_map>
+#include <memory>
+#include <unordered_map>
+#include <iostream>
+
+class TextureManager {
+public:
+    static TextureManager& getInstance() {
+        static TextureManager instance;
+        return instance;
+    }
+
+    // Load a texture from a file
+    SDL_Texture* loadTexture(const std::string& fileName, SDL_Renderer* renderer, bool cache=true);
+
+    // Clean up all textures
+    void clear();
+
+private:
+    TextureManager() {};
+
+    ~TextureManager() { clear(); }
+
+    // Disable copy constructor and assignment operator
+    TextureManager(const TextureManager&) = delete;
+    TextureManager& operator=(const TextureManager&) = delete;
+
+    // Map to store cached textures with custom deleter
+    std::unordered_map<std::string, std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>> textures;
+};
+

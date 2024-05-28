@@ -1,0 +1,77 @@
+#pragma once
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <memory>
+#include <typeinfo>
+#include <algorithm>
+#include <unordered_map>
+#include <typeindex>
+
+#include "Component.h"
+
+class GameObject
+{
+public:
+    GameObject(int _width, int _height, int _x, int _y);
+    ~GameObject() = default;
+
+    template<typename T, typename... TArgs>
+    T& addComponent(TArgs&&... args) {
+        static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+
+        // Check if the component already exists
+        auto it = components.find(typeid(T));
+        if (it != components.end()) {
+            // Component already exists, return the existing instance
+            return *static_cast<T*>(it->second.get());
+        }
+
+        // Create a new component
+        std::unique_ptr<Component> comp = std::make_unique<T>(std::forward<TArgs>(args)...);
+        comp->owner = this;
+        components.emplace(typeid(T), std::move(comp));
+        return *static_cast<T*>(components.at(typeid(T)).get());
+    }
+
+    template<typename T>
+    T* getComponent() {
+        auto it = components.find(typeid(T));
+        if (it != components.end()) {
+            return static_cast<T*>(it->second.get());
+        }
+
+        return nullptr;
+    }
+
+    //Function runs once when the game starts
+    int start();
+
+    //Function runs at each update
+    void update();
+
+    void render();
+
+    void close();
+
+    //Get GameObject
+    int getX();
+
+    int getY();
+
+    int getWidth();
+
+    int getHeight();
+
+private:
+    std::unordered_map<std::type_index, std::unique_ptr<Component>> components;
+
+protected:
+    int width;
+    int height;
+
+    int x;
+    int y;
+};
+
