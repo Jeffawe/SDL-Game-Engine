@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "Game.h"
+#include "Game\Game.h"
 
 int finalValue = 0;
 bool quit;

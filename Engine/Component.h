@@ -6,7 +6,7 @@ class GameObject;
 
 class Component {
 public:
-    GameObject* owner;
+    GameObject* owner = nullptr;
 
     virtual ~Component() = default;
 

@@ -74,10 +74,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Development\SDL\SDL2-2.30.1\include;C:\Development\SDL\SDL2-2.30.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Development\SDL\SDL2-2.30.1\lib\x64;C:\Development\SDL\SDL2-2.30.1\lib\x64;$(LibraryPath)</LibraryPath>
+    <IntDir>$(Platform)\$(Configuration)\TheGameEngine\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\Development\SDL\SDL2-2.30.1\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>C:\Development\SDL\SDL2-2.30.1\lib\x64;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IntDir>$(Platform)\$(Configuration)\TheGameEngine\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -140,22 +142,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Animator.h" />
-    <ClInclude Include="Character.h" />
-    <ClInclude Include="Component.h" />
+    <ClInclude Include="Engine\Character.h" />
+    <ClInclude Include="Engine\Component.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="Engine\Animator.h" />
+    <ClInclude Include="Game\Game.h" />
+    <ClInclude Include="Engine\GameObject.h" />
+    <ClInclude Include="Engine\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Animator.cpp" />
-    <ClCompile Include="Character.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Engine\Animator.cpp" />
+    <ClCompile Include="Engine\Character.cpp" />
+    <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Engine\GameObject.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SpriteComponent.h" />
-    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="Engine\SpriteComponent.h" />
+    <ClCompile Include="Engine\TextureManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

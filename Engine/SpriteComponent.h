@@ -20,6 +20,7 @@ public:
         TextureManager& textureManager = TextureManager::getInstance();
         renderer = _renderer;
         sprite = textureManager.loadTexture(spritePath, _renderer, true); 
+        destRect = { 0,0,0,0 };
     }
 
     //Called On Update

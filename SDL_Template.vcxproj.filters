@@ -54,7 +54,7 @@
     <ClInclude Include="Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Animator.h">
+    <ClInclude Include="Engine\Animator.h">
       <Filter>Header Files\Engine\Components</Filter>
     </ClInclude>
   </ItemGroup>
