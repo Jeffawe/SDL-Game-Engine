@@ -9,6 +9,7 @@ int main(int argc, char* argv[]) {
     finalValue = game.Start();
 
     SDL_Event e;
+    InputManager& inputManager = InputManager::getInstance();
 
     // Main loop
     while (!quit) {
@@ -16,6 +17,9 @@ int main(int argc, char* argv[]) {
             // User requests quit
             if (e.type == SDL_QUIT) {
                 quit = true;
+            }
+            else {
+                inputManager.Input(e);
             }
         }
 

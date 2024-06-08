@@ -1,69 +1,96 @@
 #include "Animator.h"
-#include <SDL.h>
 
 Animator::Animator(SDL_Renderer* _renderer)
 {
 	gRenderer = _renderer;
-	movementState = AnimationState::Idle;
+	currentState = nullptr;
 }
 
-bool Animator::PlayAnimationClip(AnimationType animationType, SDL_Rect* playerRect, Direction direction)
+void Animator::CreateAnimationState(std::vector<SDL_Texture*> textures, std::string name)
 {
-	if (animationType == emptyAnimationType) {
-		return false;
-	}
+	// Construct AnimationState object using std::make_shared
+	auto animationStatePtr = std::make_shared<AnimationState>(textures, name);
 
-	if (playerFrame >= animationType.textures.size()) playerFrame = 0;
-
-	if (direction == Direction::Left) {
-		SDL_RenderCopyEx(gRenderer, animationType.textures[playerFrame], NULL, playerRect, 0, NULL, SDL_FLIP_HORIZONTAL);
-	}
-	else {
-		SDL_RenderCopy(gRenderer, animationType.textures[playerFrame], NULL, playerRect);
-	}
-	
-	playerFrame = (playerFrame + 1) % animationType.textures.size();
-	return true;
+	// Emplace the shared pointer into the map
+	states.emplace(name, animationStatePtr);
 }
 
-bool Animator::PlayAnimation(SDL_Rect* playerRect, Direction direction)
+void Animator::addTransition(std::string fromState, std::string event, std::string toState)
 {
-	AnimationType animationType = FindAnimationType(movementState);
-
-	if (animationType == emptyAnimationType) {
-		return false;
+	if (states.find(fromState) != states.end() && states.find(toState) != states.end()) {
+		states[fromState]->addTransition(event, toState);
 	}
-
-	return PlayAnimationClip(animationType, playerRect, direction);
-}
-
-void Animator::CreateAnimationType(char _name, AnimationState _animationState, std::vector<SDL_Texture*> _textures)
-{
-	AnimationType* animationType = new AnimationType();
-	animationType->name = _name;
-	animationType->animationState = _animationState;
-	animationType->textures = _textures;
-	animationStates.push_back(animationType);
 }
 
 void Animator::CleanAnimations()
 {
-	// Destroy player textures
-	for (AnimationType* animationType : animationStates) {
-		for (SDL_Texture* texture : animationType->textures) {
-			SDL_DestroyTexture(texture);
+	for (const auto& pair : states) {
+		const std::string& stateName = pair.first;  // Get the key
+		AnimationState& animState = *pair.second;   // Get the AnimationState object
+
+		for (SDL_Texture* texture : animState.animation.textures) {
+			SDL_DestroyTexture(texture);  // Destroy each texture
 		}
 	}
 }
 
-AnimationType Animator::FindAnimationType(AnimationState finalAnimationState)
+void Animator::SetInitialState(std::string state)
 {
-	for (AnimationType* animationType : animationStates) {
-		if (animationType->animationState == finalAnimationState) {
-			return *animationType;
+	auto it = states.find(state);
+	if (it != states.end()) {
+		currentState = it->second;
+		value = 5;
+		printf("Set Current State");
+	}
+	else {
+		printf("Cannot Find a state");
+	}
+}
+
+void Animator::handleEvent(std::string event)
+{
+	if (currentState && currentState->transitions.find(event) != currentState->transitions.end()) {
+		auto nextState = FindAnimationState(currentState->transitions[event]);
+		if (nextState != nullptr) {
+			currentState = nextState;
 		}
 	}
+}
 
-	printf("No Object Found");
-	return emptyAnimationType;
+void Animator::update()
+{
+	if (owner != nullptr && getCurrentState() != nullptr) {
+		currentState->PlayAnimation(gRenderer, &owner->destRect);
+	}
+
+	value = value;
+}
+
+std::shared_ptr<AnimationState> Animator::FindAnimationState(std::string name)
+{
+	auto it = states.find(name);
+	if (it != states.end()) {
+		return it->second;
+	}
+	return nullptr;
+}
+
+AnimationState::AnimationState(std::vector<SDL_Texture*> textures, std::string name)
+{
+	animation.textures = textures;
+	animation.name = name;
+
+}
+
+void AnimationState::addTransition(std::string event, std::string nextState)
+{
+	transitions[event] = nextState;
+}
+
+void AnimationState::PlayAnimation(SDL_Renderer* renderer, SDL_Rect* destRect)
+{
+	for (auto texture : animation.textures)
+	{
+		SDL_RenderCopy(renderer, texture, NULL, destRect);
+	}
 }

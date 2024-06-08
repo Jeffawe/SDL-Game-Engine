@@ -1,6 +1,17 @@
 #pragma once
 #include "../Engine.h"
 
+struct GameObjectInfo {
+	int zIndex;
+	std::string name;
+};
+
+struct CustomComparator {
+	bool operator()(const GameObjectInfo& a, const GameObjectInfo& b) const {
+		return a.zIndex < b.zIndex;
+	}
+};
+
 class Game
 {
 public:
@@ -16,9 +27,9 @@ public:
 
 	void Close();
 
-	void SetUpGameObjects();
+	std::shared_ptr<GameObject> FindGameObject(std::string stringValue);
 
-	std::shared_ptr<GameObject> CreateGameObject(int _width, int _height, int _x, int _y);
+	std::shared_ptr<GameObject> CreateGameObject(int _width, int _height, Vector2 pos, std::string tag, int zIndex);
 
 private:
 	const int SCREEN_WIDTH = 800;
@@ -33,6 +44,8 @@ private:
 
 	void closeSDL();
 
-	std::vector<std::shared_ptr<GameObject>> gameObjects;
+	void SetUpGameObjects();
+
+	std::multimap<GameObjectInfo, std::shared_ptr<GameObject>, CustomComparator> gameObjects;
 };
 

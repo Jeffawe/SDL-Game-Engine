@@ -1,51 +1,81 @@
 #pragma once
-#include <SDL.h>
-#include <vector>
-#include <chrono>
-#include <string>
+#include "../Engine.h"
+#include "Component.h"
 
-enum class AnimationState {
-	Idle,
-	Moving,
-	Attack
-};
 
-enum class Direction {
-	Left,
-	Right
-};
-
-struct AnimationType {
-	char name; 
-	AnimationState animationState;
+struct Animation {
+	std::string name;
 	std::vector<SDL_Texture*> textures;
 
 	// Equality comparison operator
-	bool operator==(const AnimationType& other) const {
+	bool operator==(const Animation& other) const {
 		// Compare 'name' and 'textures' for equality
 		return name == other.name && textures == other.textures;
 	}
 };
 
-class Animator
+class AnimationState {
+public:
+	AnimationState() = default;
+
+	AnimationState(std::vector<SDL_Texture*> textures, std::string name);
+
+	Animation animation;
+	std::unordered_map<std::string, std::string> transitions;
+
+	void addTransition(std::string event, std::string nextState);
+
+	void PlayAnimation(SDL_Renderer* renderer, SDL_Rect* destRect);
+};
+
+/// @brief A component that handles animation.
+/// @param Renderer Takes in the SDL Renderer.
+class Animator : public Component
 {
 public:
-	Animator(SDL_Renderer* gRenderer );
-	bool PlayAnimationClip(AnimationType animationType, SDL_Rect* playerRect, Direction direction);
-	bool PlayAnimation(SDL_Rect* playerRect, Direction direction);
-	void CreateAnimationType(char name, AnimationState _animationState, std::vector<SDL_Texture*> texture);
+	Animator( SDL_Renderer* gRenderer );
+
+	/// @brief Creates an Animation.
+	/// @param textures Array of textures that make up the animation.
+	/// @param name Name of the Animation
+	void CreateAnimationState(std::vector<SDL_Texture*> textures, std::string name);
+
+	/// @brief Adds a new transition
+	/// @param fromState Name of the Animation that has the transition.
+	/// @param event Transtition Name.
+	/// @param toState Name of the Animation that the transition moves to.
+	void addTransition(std::string fromState, std::string event, std::string toState);
+
 	void CleanAnimations();
 
-	AnimationState movementState;
+	void SetInitialState(std::string state);
+
+	/// @brief Changes the Animation being played
+	/// @param event Transition Name.
+	void handleEvent(std::string event);
+
+	void update() override;
+
+
+	std::shared_ptr<AnimationState> getCurrentState() const
+	{
+		return currentState;
+	}
+
+	//Called on render
+	void render() override {}
+
+
+	int value;
 
 private:
-	AnimationType FindAnimationType(AnimationState finlAnimationState);
-	std::vector<AnimationType*> animationStates;
+	std::unordered_map<std::string, std::shared_ptr<AnimationState>> states;
+
+	std::shared_ptr<AnimationState> FindAnimationState(std::string name);
 
 	// Player animation frame index
-	int playerFrame = 0;
 	SDL_Renderer* gRenderer;
 
-	AnimationType emptyAnimationType;
+	std::shared_ptr<AnimationState> currentState;
 };
 

@@ -1,6 +1,6 @@
 #pragma once
+#include <SDL.h>
 #include <stdio.h>
-#include <string>
 #include <vector>
 #include <chrono>
 #include <memory>
@@ -8,13 +8,13 @@
 #include <algorithm>
 #include <unordered_map>
 #include <typeindex>
-
+#include "../EngineValues.h"
 #include "Component.h"
 
 class GameObject
 {
 public:
-    GameObject(int _width, int _height, int _x, int _y);
+    GameObject(int _width, int _height, Vector2 pos, std::string _tag, int _zIndex);
     ~GameObject() = default;
 
     template<typename T, typename... TArgs>
@@ -55,14 +55,17 @@ public:
 
     void close();
 
-    //Get GameObject
-    int getX();
+    Vector2 getPos();
 
-    int getY();
+    Vector2 position;
 
     int getWidth();
 
     int getHeight();
+
+    SDL_Rect destRect;
+    std::string tag;
+    int zIndex;
 
 private:
     std::unordered_map<std::type_index, std::unique_ptr<Component>> components;
@@ -70,8 +73,5 @@ private:
 protected:
     int width;
     int height;
-
-    int x;
-    int y;
 };
 

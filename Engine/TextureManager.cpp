@@ -26,6 +26,32 @@ SDL_Texture* TextureManager::loadTexture(const std::string& fileName, SDL_Render
     }
 }
 
+std::vector<SDL_Texture*> TextureManager::loadTextures(const fs::path& folderPath, SDL_Renderer* renderer, bool cache)
+{
+    std::vector<SDL_Texture*> textures;
+    try {
+        for (const auto& entry : fs::directory_iterator{ folderPath.c_str() }) {
+            if (fs::is_regular_file(entry)) {
+                auto extension = toLower(entry.path().extension().string());
+                if (extension == ".png" || extension == ".jpeg" || extension == ".jpg") {
+                    SDL_Texture* texture = loadTexture(entry.path().string(), renderer, cache);
+                    if (texture != nullptr) {
+                        textures.push_back(texture);
+                    }
+                    else {
+                        std::cerr << "Image is Null" << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+    }
+
+    return textures;
+}
+
 void TextureManager::clear()
 {
     textures.clear();

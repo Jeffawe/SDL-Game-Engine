@@ -1,13 +1,16 @@
 #include "GameObject.h"
 #include <iostream> 
 
-GameObject::GameObject(int _width, int _height, int _x, int _y)
+GameObject::GameObject(int _width, int _height, Vector2 pos, std::string _tag, int _zIndex)
 {
     width = _width;
     height = _height;
 
-    x = _x;
-    y = _y;
+    position = pos;
+    tag = _tag;
+    zIndex = _zIndex;
+
+    destRect = { position.x, position.y, width, height };
 }
 
 int GameObject::start()
@@ -46,14 +49,9 @@ void GameObject::close()
 
 }
 
-int GameObject::getX()
+Vector2 GameObject::getPos()
 {
-    return x;
-}
-
-int GameObject::getY()
-{
-    return y;
+    return position;
 }
 
 int GameObject::getWidth()

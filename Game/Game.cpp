@@ -48,9 +48,9 @@ void Game::closeSDL()
     SDL_Quit();
 }
 
-std::shared_ptr<GameObject> Game::CreateGameObject(int _width, int _height, int _x, int _y)
+std::shared_ptr<GameObject> Game::CreateGameObject(int _width, int _height, Vector2 pos, std::string tag, int zIndex)
 {
-    std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>(_width, _height, _x, _y);
+    std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>(_width, _height, pos, tag, zIndex);
     return gameObject;
 }
 
@@ -66,7 +66,8 @@ int Game::Start()
 
     if (gameObjects.empty()) return 0;
 
-    for (const auto& gameObject : gameObjects) {
+    for (const auto& pair : gameObjects) {
+        std::shared_ptr<GameObject> gameObject = pair.second;
         gameObject->start();
     }
 
@@ -80,7 +81,8 @@ int Game::Update()
 
     if (gameObjects.empty()) return 0;
 
-    for (const auto& gameObject : gameObjects) {
+    for (const auto& pair : gameObjects) {
+        std::shared_ptr<GameObject> gameObject = pair.second;
         gameObject->update();
     }
 
@@ -98,7 +100,8 @@ int Game::Update()
 
 void Game::Close()
 {
-    for (const auto& gameObject : gameObjects) {
+    for (const auto& pair : gameObjects) {
+        std::shared_ptr<GameObject> gameObject = pair.second;
         gameObject->close();
     }
 
@@ -110,16 +113,38 @@ void Game::Close()
     closeSDL();
 }
 
+std::shared_ptr<GameObject> Game::FindGameObject(std::string stringValue)
+{
+    for (const auto& pair : gameObjects) {
+        if (pair.first.name == stringValue) {
+            return pair.second;
+        }
+    }
+
+    return nullptr;
+}
+
 void Game::SetUpGameObjects()
 {
-    //Character player = Character();
-    //gameObjects.push_back(std::make_unique<GameObject>(std::move(player)));
+    TextureManager& textureManager = TextureManager::getInstance();
 
-    // Create a GameObject
-    std::shared_ptr<GameObject> image = CreateGameObject(50, 50, 30, 30);
+    std::shared_ptr<GameObject> player = std::make_shared<Character>(100, 100, Vector2(20, 30), "player", 2);
+    if (player) {
+        //player->addComponent<Transform>();
+        Animator playerAnimator = player->addComponent<Animator>(gRenderer);
+        std::filesystem::path folderPath = "./Assets/PlayerAnimations/PlayerIdle/";
+        playerAnimator.CreateAnimationState(textureManager.loadTextures(folderPath, gRenderer), "idle");
+        playerAnimator.SetInitialState("idle");
+    }
 
-    //Add the Sprite Component to it
-    image->addComponent<SpriteComponent>("./Assets/Floor.png", gRenderer);
-    gameObjects.push_back(image);
+    // Create the image GameObject
+    std::shared_ptr<GameObject> image = CreateGameObject(50, 50, Vector2(30, 30), "wall", 1);
+    if (image) {
+        image->addComponent<SpriteComponent>("./Assets/Floor.png", gRenderer);
+    }
+
+    // Add the created GameObjects to the gameObjects multimap
+    gameObjects.emplace(GameObjectInfo{ 2, "player" }, player);
+    //gameObjects.emplace(GameObjectInfo{ 2, "image" }, image);
 }
 

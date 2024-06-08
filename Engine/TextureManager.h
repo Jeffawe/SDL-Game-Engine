@@ -6,7 +6,15 @@
 #include <unordered_map>
 #include <memory>
 #include <unordered_map>
+#include <SDL.h>
+#include <SDL_image.h>
 #include <iostream>
+#include <vector>
+#include <string>
+#include <filesystem>
+#include "../EngineValues.h"
+
+namespace fs = std::filesystem;
 
 class TextureManager {
 public:
@@ -16,7 +24,9 @@ public:
     }
 
     // Load a texture from a file
-    SDL_Texture* loadTexture(const std::string& fileName, SDL_Renderer* renderer, bool cache=true);
+    SDL_Texture* loadTexture(const std::string& fileName, SDL_Renderer* renderer, bool cache = true);
+
+    std::vector<SDL_Texture*> loadTextures(const fs::path& folderName, SDL_Renderer* renderer, bool cache = true);
 
     // Clean up all textures
     void clear();
