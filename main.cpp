@@ -1,11 +1,11 @@
 #include "Engine.h"
-#include "Game\Game.h"
+#include "./TestGame.h"
 
 int finalValue = 0;
 bool quit;
 
 int main(int argc, char* argv[]) {
-    Game game;
+    TestGame game;
     finalValue = game.Start();
 
     SDL_Event e;
@@ -24,11 +24,9 @@ int main(int argc, char* argv[]) {
         }
 
         game.Update();
-
     }
 
     game.Close();
-
 
     return finalValue;
 }

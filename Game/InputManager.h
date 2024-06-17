@@ -1,7 +1,16 @@
 #pragma once
-#include "../Engine.h"
 
+#include <iostream>
+#include <SDL.h>
+#include <functional>
+
+#include "../EngineValues.h"
+
+class Character;
 class Transform;
+
+// Define an alias for the function type
+using EventFunction = std::function<void()>;
 
 class InputManager {
 public:
@@ -18,6 +27,12 @@ public:
 
 	void Possess(std::shared_ptr<Character> gameObject);
 
+	void registerSinglePressEvent(SDL_Keycode key, EventFunction func) {
+		singlePressEvents[key] = func;
+	}
+
+	void MovePossessedObject(SDL_Keycode key);
+
 private:
 	// Private default constructor
 	InputManager() = default;
@@ -28,4 +43,8 @@ private:
 
 	std::shared_ptr<Character> possessedGameObject;
 	Transform* gameObjectTransform = nullptr;
+
+	std::unordered_map<SDL_Keycode, EventFunction> singlePressEvents;
+
+	bool CanMove(int x, int y);
 };

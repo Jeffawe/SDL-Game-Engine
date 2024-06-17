@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "../Engine.h"
 
 bool Game::initSDL()
 {
@@ -48,12 +49,6 @@ void Game::closeSDL()
     SDL_Quit();
 }
 
-std::shared_ptr<GameObject> Game::CreateGameObject(int _width, int _height, Vector2 pos, std::string tag, int zIndex)
-{
-    std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>(_width, _height, pos, tag, zIndex);
-    return gameObject;
-}
-
 int Game::Start()
 {
     // Initialize SDL
@@ -61,8 +56,11 @@ int Game::Start()
         printf("Failed to initialize SDL!\n");
         return -1;
     }
+    
+    camera = &Camera::getInstance();
+    tilemap = &Tilemap::getInstance();
 
-    SetUpGameObjects();
+    camera->cameraRect = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
     if (gameObjects.empty()) return 0;
 
@@ -76,10 +74,15 @@ int Game::Start()
 
 int Game::Update()
 {
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+
     // Clear screen
     SDL_RenderClear(gRenderer);
 
     if (gameObjects.empty()) return 0;
+
+    camera->updateRect();
+    tilemap->Update();
 
     for (const auto& pair : gameObjects) {
         std::shared_ptr<GameObject> gameObject = pair.second;
@@ -88,12 +91,6 @@ int Game::Update()
 
     // Update screen
     SDL_RenderPresent(gRenderer);
-
-    // Calculate frame time and delay if necessary to achieve desired FPS
-    frameTime = SDL_GetTicks() - frameStart; // Calculate time taken to process the frame
-    if (frameTime < FRAME_DELAY) {
-        SDL_Delay(FRAME_DELAY - frameTime); // Delay if the frame was processed too quickly
-    }
 
     return 0;
 }
@@ -108,43 +105,34 @@ void Game::Close()
     //Clears all Textures that were added
     TextureManager& textureManager = TextureManager::getInstance();
     textureManager.clear();
+    if (tilemap != nullptr) tilemap->Close();
 
     // Close SDL
     closeSDL();
 }
 
-std::shared_ptr<GameObject> Game::FindGameObject(std::string stringValue)
+void Game::DebugRect(SDL_Renderer* renderer, SDL_Rect* rect, SDL_Color color)
 {
-    for (const auto& pair : gameObjects) {
-        if (pair.first.name == stringValue) {
-            return pair.second;
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
+        // Draw the rectangle outline
+        SDL_RenderDrawRect(renderer, rect);
+
+        // Render the changes to the screen
+        SDL_RenderPresent(renderer);
+}
+
+std::shared_ptr<GameObject> Game::FindGameObject(int zIndex, std::string name)
+{
+    GameObjectInfo info{ zIndex, name };
+    auto range = gameObjects.equal_range(info);
+
+    for (auto it = range.first; it != range.second; ++it) {
+        if (it->first.name == name) {
+            return it->second;
         }
     }
 
     return nullptr;
-}
-
-void Game::SetUpGameObjects()
-{
-    TextureManager& textureManager = TextureManager::getInstance();
-
-    std::shared_ptr<GameObject> player = std::make_shared<Character>(100, 100, Vector2(20, 30), "player", 2);
-    if (player) {
-        //player->addComponent<Transform>();
-        Animator playerAnimator = player->addComponent<Animator>(gRenderer);
-        std::filesystem::path folderPath = "./Assets/PlayerAnimations/PlayerIdle/";
-        playerAnimator.CreateAnimationState(textureManager.loadTextures(folderPath, gRenderer), "idle");
-        playerAnimator.SetInitialState("idle");
-    }
-
-    // Create the image GameObject
-    std::shared_ptr<GameObject> image = CreateGameObject(50, 50, Vector2(30, 30), "wall", 1);
-    if (image) {
-        image->addComponent<SpriteComponent>("./Assets/Floor.png", gRenderer);
-    }
-
-    // Add the created GameObjects to the gameObjects multimap
-    gameObjects.emplace(GameObjectInfo{ 2, "player" }, player);
-    //gameObjects.emplace(GameObjectInfo{ 2, "image" }, image);
 }
 

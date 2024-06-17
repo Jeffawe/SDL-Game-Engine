@@ -1,14 +1,16 @@
 #pragma once
-#include "Component.h"
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream> 
+
+#include "Component.h"
 #include "TextureManager.h"
 #include "GameObject.h"
 
 /// @brief A component that handles sprite rendering.
-/// @param spritePath The file path to the sprite image.
-/// @param renderer The SDL renderer.
+/// @param spritePath: The file path to the sprite image.
+/// @param renderer: The SDL renderer.
 class SpriteComponent : public Component {
 private:
     SDL_Texture* sprite;
@@ -21,15 +23,21 @@ public:
         sprite = textureManager.loadTexture(spritePath, _renderer, true); 
     }
 
+    void start() override {}
+
     //Called On Update
     void update() override {
         if (owner != nullptr) {
+            owner->ChangeDestRect();
             SDL_RenderCopy(renderer, sprite, NULL, &owner->destRect);
         }        
     }
 
     //Called on render
-    void render() override {
-        SDL_RenderCopy(renderer, sprite, NULL, NULL);
+    void render() override {}
+
+    void close() override {
+        renderer = nullptr;
+        sprite = nullptr;
     }
 };

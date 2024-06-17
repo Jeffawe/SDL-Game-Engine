@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <typeinfo>
 
@@ -10,8 +11,10 @@ public:
 
     virtual ~Component() = default;
 
+    virtual void start() = 0;
     virtual void update() = 0;
     virtual void render() = 0;
+    virtual void close() = 0;
 
     template<typename T>
     bool is() {

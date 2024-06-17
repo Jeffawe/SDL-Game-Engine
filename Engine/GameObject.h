@@ -1,21 +1,24 @@
 #pragma once
+
 #include <SDL.h>
 #include <stdio.h>
 #include <vector>
-#include <chrono>
 #include <memory>
 #include <typeinfo>
 #include <algorithm>
 #include <unordered_map>
 #include <typeindex>
+#include <iostream> 
+
 #include "../EngineValues.h"
 #include "Component.h"
+
 
 class GameObject
 {
 public:
-    GameObject(int _width, int _height, Vector2 pos, std::string _tag, int _zIndex);
-    ~GameObject() = default;
+    GameObject(int _width, int _height, Vector2 pos, std::string _tag);
+    ~GameObject() { close(); }
 
     template<typename T, typename... TArgs>
     T& addComponent(TArgs&&... args) {
@@ -31,6 +34,7 @@ public:
         // Create a new component
         std::unique_ptr<Component> comp = std::make_unique<T>(std::forward<TArgs>(args)...);
         comp->owner = this;
+        comp->start();
         components.emplace(typeid(T), std::move(comp));
         return *static_cast<T*>(components.at(typeid(T)).get());
     }
@@ -55,17 +59,20 @@ public:
 
     void close();
 
-    Vector2 getPos();
+    Vector2 getPos() const;
 
     Vector2 position;
 
-    int getWidth();
+    int getWidth() const;
 
-    int getHeight();
+    int getHeight() const;
+
+    void ChangeDestRect();
+
+    //Transform& GetTransform();
 
     SDL_Rect destRect;
     std::string tag;
-    int zIndex;
 
 private:
     std::unordered_map<std::type_index, std::unique_ptr<Component>> components;
@@ -73,5 +80,6 @@ private:
 protected:
     int width;
     int height;
+    //Transform& transform;
 };
 
